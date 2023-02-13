@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure--&!id9=6t4yhe)oow#4+gefj&1ok!yi0e32hgppg^1*yjz0cm1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'corsheaders',
     'apps.user.apps.UserConfig',
+    'apps.product.apps.ProductConfig',
     'rest_framework',
     'rest_framework_simplejwt',
     'django.contrib.admin',
@@ -143,7 +144,7 @@ REST_FRAMEWORK = {
 
 }
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=360),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -170,7 +171,7 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=360),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 # AUTH_USER_MODEL = 'user.CustomUser'
