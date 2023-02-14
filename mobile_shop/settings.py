@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'corsheaders',
     'apps.user.apps.UserConfig',
+    'apps.cart.apps.CartConfig',
     'apps.product.apps.ProductConfig',
     'rest_framework',
     'rest_framework_simplejwt',
