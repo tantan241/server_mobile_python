@@ -8,11 +8,11 @@ class Brand(models.Model):
         return str(self.name)
 class Product(models.Model):
     name = models.CharField(max_length=155,default="")
-    slug = models.CharField(max_length=255,default="")
-    price = models.FloatField(default=0)
-    discount = models.IntegerField(default=0)
+    # slug = models.CharField(max_length=255,default="")
+    # price = models.FloatField(default=0)
+    # discount = models.IntegerField(default=0)
     type = models.IntegerField(default=0)
-    image = models.CharField(max_length=255,default="")
+    # image = models.CharField(max_length=255,default="")
     status=models.IntegerField(default=1)
     brand =models.ForeignKey(Brand,on_delete=models.CASCADE)
     # def __str__(self) :
@@ -30,3 +30,13 @@ class ProductDetail(models.Model):
     image = models.CharField(max_length=255,null=True,blank=True,default="")
     typeProduct = models.IntegerField(default=1)
     product = models.OneToOneField(Product,on_delete=models.CASCADE)
+
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    # name = models.CharField(max_length=155,default="")
+    slug = models.CharField(max_length=255,default="")
+    price = models.FloatField(default=0)
+    discount = models.IntegerField(default=0)
+    image = models.CharField(max_length=255,default="")
+    images= models.TextField(default="[]")
+    specifications= models.TextField(default="")

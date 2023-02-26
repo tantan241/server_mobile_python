@@ -4,7 +4,7 @@ from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
 from .serializers import GetBrandSerializer, GetProductSerializer, GetProductDetailsSerializer
-from .models import Brand, Product, ProductDetail
+from .models import Brand, Product, ProductDetail,ProductVariant
 from django.db.models import Q
 # Create your views here.
 
@@ -25,32 +25,32 @@ class GetBrand(APIView):
 
 
 class GetMobile(generics.ListAPIView):
-    # def get(self, request):
-    #     data =Brand.objects.all()
-    #     res = GetBrandSerializer(data,many=True)
-    #     return Response(res.data)
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
         dataRequest = GetProductSerializer(data=request.data)
+     
         q = Q()
         if not dataRequest.is_valid():
-            results = ProductDetail.objects.select_related(
+            results = ProductVariant.objects.select_related(
                 'product').filter(product__status=1).all()
             data = GetProductDetailsSerializer(results, many=True)
             return Response({"messenger":"Lỗi", "status": 400})
         filter = dataRequest.data["filter"]
-        # print(type)
-
         for key in filter:
             if key == "brand" and len(filter["brand"]) > 0:
                 q |= Q(product__brand__in=filter[key])
             elif key == "ram" and len(filter["ram"]) > 0:
-                q |= Q(ram__in=filter[key])
+                for item in filter[key]:
+                    q |= Q(specifications__contains=f"ram={item}")
             elif key == "rom" and len(filter["rom"]) > 0:
-                q |= Q(rom__in=filter[key])
+                for item in filter[key]:
+                    q |= Q(specifications__contains=f"rom={item}")
+                # q |= Q(rom__in=filter[key])
             elif key == "frontCamera" and len(filter["frontCamera"]) > 0:
-                q |= Q(frontCamera__in=filter[key])
+                for item in filter[key]:
+                    q |= Q(specifications__contains=f"frontCamera={item}")
+                # q |= Q(frontCamera__in=filter[key])
         for key in dataRequest.data:
             if key == "type":
                 type = dataRequest.data["type"]
@@ -64,9 +64,8 @@ class GetMobile(generics.ListAPIView):
                     else:
                         q &= Q(product__price__gt=price["fromPrice"])
                         q &= Q(product__price__lt=price["toPrice"])
-
         print(q)
-        results = ProductDetail.objects.select_related(
+        results = ProductVariant.objects.select_related(
             'product').filter(q & Q(product__status=1))
         data = GetProductDetailsSerializer(results, many=True)
         return Response({"data": data.data,
