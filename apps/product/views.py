@@ -4,7 +4,7 @@ from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
 from .serializers import GetBrandSerializer, GetProductSerializer, GetProductDetailsSerializer
-from .models import Brand, Product, ProductDetail,ProductVariant
+from .models import Brand, Product,ProductVariant
 from django.db.models import Q
 # Create your views here.
 

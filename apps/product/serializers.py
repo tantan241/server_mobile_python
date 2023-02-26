@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Brand,Product,ProductDetail,ProductVariant
+from .models import Brand,Product,ProductVariant
 class GetBrandSerializer(serializers.ModelSerializer):
     class Meta:
         model=  Brand

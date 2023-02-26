@@ -17,19 +17,19 @@ class Product(models.Model):
     brand =models.ForeignKey(Brand,on_delete=models.CASCADE)
     # def __str__(self) :
     #     return self.name
-class ProductDetail(models.Model):
-    display = models.CharField(max_length=255,null=True,blank=True,default="")
-    system = models.CharField(max_length=255,null=True,blank=True,default="")
-    frontCamera = models.CharField(max_length=255,null=True,blank=True,default="")
-    rearCamera = models.CharField(max_length=255,null=True,blank=True,default="")
-    chip = models.CharField(max_length=255,null=True,blank=True,default="")
-    ram = models.CharField(max_length=255,null=True,blank=True,default="")
-    rom = models.CharField(max_length=255,null=True,blank=True,default="")
-    sim = models.CharField(max_length=255,null=True,blank=True,default="")
-    battery = models.CharField(max_length=255,null=True,blank=True,default="")
-    image = models.CharField(max_length=255,null=True,blank=True,default="")
-    typeProduct = models.IntegerField(default=1)
-    product = models.OneToOneField(Product,on_delete=models.CASCADE)
+# class ProductDetail(models.Model):
+#     display = models.CharField(max_length=255,null=True,blank=True,default="")
+#     system = models.CharField(max_length=255,null=True,blank=True,default="")
+#     frontCamera = models.CharField(max_length=255,null=True,blank=True,default="")
+#     rearCamera = models.CharField(max_length=255,null=True,blank=True,default="")
+#     chip = models.CharField(max_length=255,null=True,blank=True,default="")
+#     ram = models.CharField(max_length=255,null=True,blank=True,default="")
+#     rom = models.CharField(max_length=255,null=True,blank=True,default="")
+#     sim = models.CharField(max_length=255,null=True,blank=True,default="")
+#     battery = models.CharField(max_length=255,null=True,blank=True,default="")
+#     image = models.CharField(max_length=255,null=True,blank=True,default="")
+#     typeProduct = models.IntegerField(default=1)
+#     product = models.OneToOneField(Product,on_delete=models.CASCADE)
 
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
