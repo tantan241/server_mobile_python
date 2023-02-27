@@ -26,10 +26,8 @@ class GetBrand(APIView):
 
 class GetMobile(generics.ListAPIView):
     permission_classes = (permissions.AllowAny,)
-
     def post(self, request):
         dataRequest = GetProductSerializer(data=request.data)
-     
         q = Q()
         if not dataRequest.is_valid():
             results = ProductVariant.objects.select_related(
@@ -70,3 +68,15 @@ class GetMobile(generics.ListAPIView):
         data = GetProductDetailsSerializer(results, many=True)
         return Response({"data": data.data,
                          "status": 200})
+    def get(self, request, *args, **kwargs):
+        id =request.GET["id"]
+        try:
+            results = ProductVariant.objects.select_related(
+                'product').get(id=id)
+            print(results)
+            data = GetProductDetailsSerializer(results)
+        except:
+            return Response("Không tồn tại sản phẩm")
+        return Response({"data":data.data,"status": 200})
+# class GetOneProduct(APIView):
+    
