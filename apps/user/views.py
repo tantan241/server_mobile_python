@@ -54,7 +54,6 @@ class CreateUser(APIView):
                                 "data": f"{data.data}",
                                  "messenger": "Tạo mới tài khoản thành công."}, status=status.HTTP_201_CREATED)
         except EOFError:
-            print(EOFError)
             return Response({"status": 400,
                              "data": "Lỗi dữ liệu",
                              "messenger": "Tài khoản đã tồn tại."
