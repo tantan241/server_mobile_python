@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
-from .serializers import GetBrandSerializer, GetProductSerializer, GetProductDetailsSerializer
-from .models import Brand, Product,ProductVariant
+from .serializers import GetBrandSerializer, GetProductSerializer, ProductSerializer
+from .models import Brand, Product
 from django.db.models import Q
 # Create your views here.
 
@@ -30,14 +30,13 @@ class GetMobile(generics.ListAPIView):
         dataRequest = GetProductSerializer(data=request.data)
         q = Q()
         if not dataRequest.is_valid():
-            results = ProductVariant.objects.select_related(
-                'product').filter(product__status=1).all()
-            data = GetProductDetailsSerializer(results, many=True)
+            results = Product.objects.filter(status=1).all()
+            data = ProductSerializer(results, many=True)
             return Response({"messenger":"Lỗi", "status": 400})
         filter = dataRequest.data["filter"]
         for key in filter:
             if key == "brand" and len(filter["brand"]) > 0:
-                q |= Q(product__brand__in=filter[key])
+                q |= Q(brand__in=filter[key])
             elif key == "ram" and len(filter["ram"]) > 0:
                 for item in filter[key]:
                     q |= Q(specifications__contains=f"ram={item}")
@@ -53,28 +52,26 @@ class GetMobile(generics.ListAPIView):
             if key == "type":
                 type = dataRequest.data["type"]
                 if type == 0 or type == 1:
-                    q &= Q(product__type=type)
+                    q &= Q(type=type)
             if key == "price":
                 price = dataRequest.data["price"]
                 if (price["fromPrice"] > 0 and price["toPrice"] > 0):
                     if (price["fromPrice"] > price["toPrice"]):
                         return Response({"messenger": "Từ giá không được lớn hơn đến giá", "status": 400})
                     else:
-                        q &= Q(product__price__gt=price["fromPrice"])
-                        q &= Q(product__price__lt=price["toPrice"])
+                        q &= Q(price__gt=price["fromPrice"])
+                        q &= Q(price__lt=price["toPrice"])
         print(q)
-        results = ProductVariant.objects.select_related(
-            'product').filter(q & Q(product__status=1))
-        data = GetProductDetailsSerializer(results, many=True)
+        results = Product.objects.filter(q & Q(status=1))
+        data = ProductSerializer(results, many=True)
         return Response({"data": data.data,
                          "status": 200})
     def get(self, request, *args, **kwargs):
         id =request.GET["id"]
         try:
-            results = ProductVariant.objects.select_related(
-                'product').get(id=id)
+            results = Product.objects.get(id=id)
             print(results)
-            data = GetProductDetailsSerializer(results)
+            data = ProductSerializer(results)
         except:
             return Response("Không tồn tại sản phẩm")
         return Response({"data":data.data,"status": 200})

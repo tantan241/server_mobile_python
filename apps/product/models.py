@@ -6,15 +6,15 @@ class Brand(models.Model):
     status = models.IntegerField(default=1)
     def __str__(self) :
         return str(self.name)
-class Product(models.Model):
-    name = models.CharField(max_length=155,default="")
+# class Product(models.Model):
+#     name = models.CharField(max_length=155,default="")
     # slug = models.CharField(max_length=255,default="")
     # price = models.FloatField(default=0)
     # discount = models.IntegerField(default=0)
-    type = models.IntegerField(default=0)
+    # type = models.IntegerField(default=0)
     # image = models.CharField(max_length=255,default="")
-    status=models.IntegerField(default=1)
-    brand =models.ForeignKey(Brand,on_delete=models.CASCADE)
+    # status=models.IntegerField(default=1)
+    # brand =models.ForeignKey(Brand,on_delete=models.CASCADE)
     # def __str__(self) :
     #     return self.name
 # class ProductDetail(models.Model):
@@ -31,9 +31,12 @@ class Product(models.Model):
 #     typeProduct = models.IntegerField(default=1)
 #     product = models.OneToOneField(Product,on_delete=models.CASCADE)
 
-class ProductVariant(models.Model):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    # name = models.CharField(max_length=155,default="")
+class Product(models.Model):
+    # product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    name = models.CharField(max_length=155,default="")
+    type = models.IntegerField(default=0)
+    status=models.IntegerField(default=1)
+    brand =models.ForeignKey(Brand,on_delete=models.CASCADE)
     slug = models.CharField(max_length=255,default="")
     price = models.FloatField(default=0)
     discount = models.IntegerField(default=0)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Brand,Product,ProductVariant
+from .models import Brand,Product
 class GetBrandSerializer(serializers.ModelSerializer):
     class Meta:
         model=  Brand
@@ -31,11 +31,6 @@ class ProductSerializer(serializers.ModelSerializer):
 #         fields = ('id','display','system','frontCamera','rearCamera','chip','ram','rom','battery','name','slug','price',
 #         'discount','type','image','brand')
 class GetProductDetailsSerializer(serializers.ModelSerializer):
-    type =serializers.IntegerField(read_only=True,source="product.type")
-    brand =serializers.CharField(read_only=True,source="product.brand")
-    name =serializers.CharField(read_only=True,source="product.name")
-
     class Meta:
-        model = ProductVariant
-        fields = ('id','images','name','slug','price',
-        'discount','type','image','brand','specifications')
+        model = Product
+        fields = "__all__"
