@@ -27,3 +27,6 @@ class UpdateNumberSerializers(serializers.Serializer):
 class DeleteCartDetailSerializers(serializers.Serializer):
     userId = serializers.IntegerField()
     productId = serializers.IntegerField()
+
+class GetNumberProductSerializers(serializers.Serializer):
+    userId = serializers.IntegerField()

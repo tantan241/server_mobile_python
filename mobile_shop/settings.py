@@ -88,7 +88,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MobileShop',
         'USER': 'root',
-        'PASSWORD': 'tanvip01@',
+        'PASSWORD': 'tan2001',
         'HOST':'localhost',
         'PORT':'3306',
     }

@@ -1,0 +1,6 @@
+django==4.1.6
+django_cors_headers==3.13.0
+djangorestframework==3.14.0
+rest_framework
+rest_framework_simplejwt
+pip install mysqlclient =2.1.1
