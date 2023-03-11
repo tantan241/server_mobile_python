@@ -88,13 +88,24 @@ class GetMobile(generics.ListAPIView):
         return Response({"data": data.data,
                          "status": 200})
     def get(self, request, *args, **kwargs):
-        id =request.GET["id"]
-        try:
-            results = Product.objects.get(id=id)
-            data = ProductSerializer(results)
-        except:
-            return Response("Không tồn tại sản phẩm")
-        return Response({"data":data.data,"status": 200})
+        id =request.query_params.get('id', None)  
+        q =request.query_params.get('q', None)  
+        if id :
+            try:
+                results = Product.objects.get(id=id)
+                data = ProductSerializer(results)
+                return Response({"data":data.data,"status": 200})
+            except:
+                return Response("Không tồn tại sản phẩm")
+        if q:
+            results = Product.objects.filter(Q(name__icontains=q)).values()
+            for item in results:
+                res  =self.get_rating_in_product( item["id"])
+                for key in res:
+                    item[key]= res[key]
+            return Response({"status": 200, "data": results})
+        
+      
     def get_rating_in_product(self, id_model):
         res = Comment.objects.filter(product_id=id_model).aggregate(Avg("rating"))['rating__avg']
         num = Comment.objects.filter(product_id=id_model).exclude(rating__isnull=True).count()
