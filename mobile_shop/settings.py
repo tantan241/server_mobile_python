@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,7 +37,9 @@ INSTALLED_APPS = [
     'apps.user.apps.UserConfig',
     'apps.comment.apps.CommentConfig',
     'apps.cart.apps.CartConfig',
+    'apps.filter.apps.FilterConfig',
     'apps.product.apps.ProductConfig',
+    'apps.files.apps.FilesConfig',
     'rest_framework',
     'rest_framework_simplejwt',
     'django.contrib.admin',
@@ -177,3 +180,9 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 # AUTH_USER_MODEL = 'user.CustomUser'
+
+# STATIC_URL='/static/'
+# STATICFILES_DIRS=[os.path.join(BASE_DIR, "static")]
+
+MEDIA_URL ='/media/'
+MEDIA_ROOT =os.path.join(BASE_DIR, 'media')

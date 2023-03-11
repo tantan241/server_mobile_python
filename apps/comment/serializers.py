@@ -4,7 +4,7 @@ from .models import Comment
 class SendCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model= Comment
-        fields = ("user","product","content","rating")
+        fields = ("user","product","content","rating","image")
 class GetCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model =Comment

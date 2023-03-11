@@ -5,11 +5,14 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from .serializers import GetBrandSerializer, GetProductSerializer, ProductSerializer
 from .models import Brand, Product
+from apps.comment.models import Comment
 from django.db.models import Q
+from django.db.models import Avg
 # Create your views here.
 
 
 class GetBrand(APIView):
+    permission_classes = (permissions.AllowAny,)
     def get(self, request):
         dataRes = []
         try:
@@ -34,6 +37,7 @@ class GetMobile(generics.ListAPIView):
             data = ProductSerializer(results, many=True)
             return Response({"messenger":"Lỗi", "status": 400})
         filter = dataRequest.data["filter"]
+        order_by =""
         for key in filter:
             if key == "brand" and len(filter["brand"]) > 0:
                 q |= Q(brand__in=filter[key])
@@ -61,19 +65,42 @@ class GetMobile(generics.ListAPIView):
                     else:
                         q &= Q(price__gt=price["fromPrice"])
                         q &= Q(price__lt=price["toPrice"])
-        print(q)
-        results = Product.objects.filter(q & Q(status=1))
+            if key == "order":
+                order = dataRequest.data["order"]
+                if order == "asc": # tăng dần 
+                    order_by="asc"
+                if order == "desc":
+                    order_by="desc" # giảm dần 
+        page = dataRequest.data["page"]
+        numberProduct = dataRequest.data["numberProduct"]
+        start = (page-1 )* numberProduct 
+        if (order_by=="asc") :
+            results = Product.objects.filter(q & Q(status=1)).order_by("price")[start:(start+numberProduct )]
+        elif (order_by=="desc"):
+            results = Product.objects.filter(q & Q(status=1)).order_by("-price")[start:(start+numberProduct) ]
+        else: 
+            results = Product.objects.filter(q & Q(status=1))[start:start+numberProduct]
         data = ProductSerializer(results, many=True)
+        for item in data.data:
+                res  =self.get_rating_in_product( item["id"])
+                for key in res:
+                    item[key]= res[key]
         return Response({"data": data.data,
                          "status": 200})
     def get(self, request, *args, **kwargs):
         id =request.GET["id"]
         try:
             results = Product.objects.get(id=id)
-            print(results)
             data = ProductSerializer(results)
         except:
             return Response("Không tồn tại sản phẩm")
         return Response({"data":data.data,"status": 200})
+    def get_rating_in_product(self, id_model):
+        res = Comment.objects.filter(product_id=id_model).aggregate(Avg("rating"))['rating__avg']
+        num = Comment.objects.filter(product_id=id_model).exclude(rating__isnull=True).count()
+        return {"rating": res,
+                "number_rating": num
+                }
+
 # class GetOneProduct(APIView):
     

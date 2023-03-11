@@ -40,6 +40,9 @@ class Product(models.Model):
     slug = models.CharField(max_length=255,default="")
     price = models.FloatField(default=0)
     discount = models.IntegerField(default=0)
-    image = models.CharField(max_length=255,default="")
-    images= models.TextField(default="[]")
-    specifications= models.TextField(default="")
+    image = models.CharField(max_length=255)
+    images= models.TextField(max_length=1000)
+    number = models.IntegerField(default="0")
+    specifications= models.TextField(default="",blank =True)
+    def __str__(self) :
+        return str(self.name)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Brand,Product
+from apps.comment.models import Comment
 class GetBrandSerializer(serializers.ModelSerializer):
     class Meta:
         model=  Brand
@@ -9,12 +10,16 @@ class GetProductSerializer(serializers.Serializer):
     filter = serializers.DictField()
     type = serializers.IntegerField(required=False)
     price = serializers.DictField(required=False)
+    order = serializers.CharField(required=False,allow_blank=True)
+    page = serializers.IntegerField(required=True) # số page 
+    numberProduct = serializers.IntegerField(required=True) # số sản phẩm trả về trong 1 page
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model=  Product
-        fields= '__all__'
+        fields= "__all__"
+        # fields= ('id', 'name', 'type','status', 'brand', 'slug', 'price','discount','image','images','number','specification','')
 
 # class GetProductDetailsSerializer(serializers.ModelSerializer):
 #     name =serializers.CharField(read_only=True,source="product.name")
