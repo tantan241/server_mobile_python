@@ -43,6 +43,6 @@ class Product(models.Model):
     image = models.CharField(max_length=255)
     images= models.TextField(max_length=1000)
     number = models.IntegerField(default="0")
-    specifications= models.TextField(default="",blank =True)
+    specifications= models.JSONField()
     def __str__(self) :
         return str(self.name)

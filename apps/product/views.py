@@ -43,14 +43,14 @@ class GetMobile(generics.ListAPIView):
                 q |= Q(brand__in=filter[key])
             elif key == "ram" and len(filter["ram"]) > 0:
                 for item in filter[key]:
-                    q |= Q(specifications__contains=f"ram={item}")
+                    q |= Q(specifications__contains=[{"value": f"{item}","name": f"{key}"}])
             elif key == "rom" and len(filter["rom"]) > 0:
                 for item in filter[key]:
-                    q |= Q(specifications__contains=f"rom={item}")
+                    q |= Q(specifications__contains=[{"value": f"{item}","name": f"{key}"}])
                 # q |= Q(rom__in=filter[key])
             elif key == "frontCamera" and len(filter["frontCamera"]) > 0:
                 for item in filter[key]:
-                    q |= Q(specifications__contains=f"frontCamera={item}")
+                    q |= Q(specifications__contains=[{"value": f"{item}","name": f"{key}"}])
                 # q |= Q(frontCamera__in=filter[key])
         for key in dataRequest.data:
             if key == "type":
@@ -89,7 +89,7 @@ class GetMobile(generics.ListAPIView):
                          "status": 200})
     def get(self, request, *args, **kwargs):
         id =request.query_params.get('id', None)  
-        q =request.query_params.get('q', None)  
+        q =request.query_params.get('query', None)  
         if id :
             try:
                 results = Product.objects.get(id=id)
