@@ -74,12 +74,13 @@ class GetMobile(generics.ListAPIView):
         page = dataRequest.data["page"]
         numberProduct = dataRequest.data["numberProduct"]
         start = (page-1 )* numberProduct 
+        end = start+ numberProduct
         if (order_by=="asc") :
-            results = Product.objects.filter(q & Q(status=1)).order_by("price")[start:(start+numberProduct )]
+            results = Product.objects.filter(q & Q(status=1)).order_by("price")[start:end]
         elif (order_by=="desc"):
-            results = Product.objects.filter(q & Q(status=1)).order_by("-price")[start:(start+numberProduct) ]
+            results = Product.objects.filter(q & Q(status=1)).order_by("-price")[start:end]
         else: 
-            results = Product.objects.filter(q & Q(status=1))[start:start+numberProduct]
+            results = Product.objects.filter(q & Q(status=1))[start:end]
         data = ProductSerializer(results, many=True)
         for item in data.data:
                 res  =self.get_rating_in_product( item["id"])
