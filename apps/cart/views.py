@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from .models import CartDetail, Cart
 from apps.product.models import Product
+from apps.user.models import User
 # Create your views here.
 
 # class CreateCartView(APIView):
@@ -21,9 +22,12 @@ class AddCartView(APIView):
         data = AddCartSerializers(data=request.data)
         if not data.is_valid():
             return Response("Lỗi dữ liệu đầu vào thêm sản phẩm.", status=status.HTTP_400_BAD_REQUEST)
-        cartOfUser = Cart.objects.filter(user=data.data["user"]).first()
+        cartOfUser = Cart.objects.filter(user=data.data["user"]).first()      
+        if not cartOfUser:
+            user = User.objects.get(id = data.data["user"])
+            Cart.objects.create(user= user)
+            cartOfUser = Cart.objects.filter(user=data.data["user"]).first()  
         productOfCart = Product.objects.filter(pk=data.data["product"]).first()
-        print(cartOfUser)
         if cartOfUser and productOfCart:
             checkCartDetail = CartDetail.objects.filter(
                 cart=cartOfUser, product=data.data["product"]).first()
@@ -97,3 +101,15 @@ class DeleteCartDetailView(APIView):
             return Response({"status": 200, "messenger": "Xóa thành thành công!"}, status=status.HTTP_200_OK)
         except:
             return Response("Không tồn tại chi tiết giỏ hàng")
+
+class DeleteCartView(APIView):
+    def delete(self, request):
+        userId = request.query_params.get('userId')
+        try:
+            cart = Cart.objects.get(user=userId)                  
+            CartDetail.objects.filter(cart_id=cart.id).delete()
+            cart.delete()
+        except:
+             return Response({"status":400,
+                                 "messenger": "Người dùng chưa có giỏ hàng"})
+        return Response({"status": 200})

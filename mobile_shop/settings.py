@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.filter.apps.FilterConfig',
     'apps.product.apps.ProductConfig',
     'apps.files.apps.FilesConfig',
+    'apps.order.apps.OrderConfig',
     'rest_framework',
     'rest_framework_simplejwt',
     'django.contrib.admin',

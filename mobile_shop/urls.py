@@ -27,6 +27,7 @@ urlpatterns = [
     path('app/api/comment/', include('apps.comment.urls')),
     path('app/api/files/', include('apps.files.urls')),
     path('app/api/filter/', include('apps.filter.urls')),
+    path('app/api/order/', include('apps.order.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
