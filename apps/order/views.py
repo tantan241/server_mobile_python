@@ -35,3 +35,10 @@ class CreateOrderView(APIView):
                          "messenger": "Đặt hàng thành công",
                          "data": {"id": order.id}
                          })
+
+class CountOrderView(APIView):
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET["user"]
+        user = CustomUser.objects.get(id=user_id)
+        count_order = Order.objects.filter(user = user,status=0).count() # 1 đang thực hiện
+        return Response({"status": 200,"count": count_order})

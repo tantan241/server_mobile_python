@@ -3,11 +3,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
-from .serializers import GetBrandSerializer, GetProductSerializer, ProductSerializer
+from .serializers import GetBrandSerializer, GetProductSerializer, ProductSerializer,GetRoleReviewProductSerializers
 from .models import Brand, Product
 from apps.comment.models import Comment
+from apps.user.models import CustomUser
 from django.db.models import Q
 from django.db.models import Avg
+from math import *
 # Create your views here.
 
 
@@ -86,7 +88,10 @@ class GetMobile(generics.ListAPIView):
                 res  =self.get_rating_in_product( item["id"])
                 for key in res:
                     item[key]= res[key]
+        count = results = Product.objects.filter(q & Q(status=1)).count()
+        numberPage = ceil(count /numberProduct)
         return Response({"data": data.data,
+                         "numberPage": numberPage,
                          "status": 200})
     def get(self, request, *args, **kwargs):
         id =request.query_params.get('id', None)  
@@ -114,5 +119,19 @@ class GetMobile(generics.ListAPIView):
                 "number_rating": num
                 }
 
-# class GetOneProduct(APIView):
-    
+class GetRoleReviewProductView(APIView):
+    def post(self,request):
+        data = GetRoleReviewProductSerializers(data = request.data)
+        if not data.is_valid():
+            return Response("Lỗi dữ liệu đầu vào", status=status.HTTP_400_BAD_REQUEST)
+        user = CustomUser.objects.get(id=data.data["userId"])
+        product = Product.objects.get(id=data.data["productId"])
+        commented = 0
+        try:
+            Comment.objects.get(user=user,product= product)
+            commented =1
+        except:
+            commented = 0
+        return Response({"status": 200,"commented": commented
+                         })
+            

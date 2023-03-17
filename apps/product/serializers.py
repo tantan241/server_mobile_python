@@ -39,3 +39,7 @@ class GetProductDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = "__all__"
+
+class GetRoleReviewProductSerializers(serializers.Serializer):
+    userId = serializers.IntegerField(required=True)
+    productId = serializers.IntegerField(required=True)
