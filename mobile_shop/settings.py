@@ -90,9 +90,9 @@ WSGI_APPLICATION = 'mobile_shop.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'MobileShop',
+        'NAME': 'mobileshop',
         'USER': 'root',
-        'PASSWORD': 'tan2001',
+        'PASSWORD': 'tanvip01@',
         'HOST':'localhost',
         'PORT':'3306',
     }
