@@ -7,8 +7,10 @@ from .serializers import GetBrandSerializer, GetProductSerializer, ProductSerial
 from .models import Brand, Product
 from apps.comment.models import Comment
 from apps.user.models import CustomUser
+from apps.order.models import OrderDetail
 from django.db.models import Q
 from django.db.models import Avg
+from django.db.models import Sum
 from math import *
 # Create your views here.
 
@@ -134,4 +136,17 @@ class GetRoleReviewProductView(APIView):
             commented = 0
         return Response({"status": 200,"commented": commented
                          })
-            
+class GetTopBuyProductView(generics.ListAPIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self,request):
+        limit = request.GET.get("limit")
+        if not limit:
+            return Response("Không tồn tại limit")  
+        order_details = OrderDetail.objects.values('product_id').annotate(sum=Sum('number')).order_by('-sum')[:int(limit)]
+        list_product_id = list()
+        for item in order_details:
+            list_product_id.append(item["product_id"])
+        products = Product.objects.filter(id__in=list_product_id)
+        data = ProductSerializer(products, many=True)
+        return Response({"status": 200,"data": data.data})
