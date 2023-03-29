@@ -97,7 +97,7 @@ class GetMobile(generics.ListAPIView):
                          "status": 200})
     def get(self, request, *args, **kwargs):
         id =request.query_params.get('id', None)  
-        q =request.query_params.get('query', None)  
+        q =request.query_params.get('query', None)
         if id :
             try:
                 results = Product.objects.get(id=id)
@@ -150,3 +150,23 @@ class GetTopBuyProductView(generics.ListAPIView):
         products = Product.objects.filter(id__in=list_product_id)
         data = ProductSerializer(products, many=True)
         return Response({"status": 200,"data": data.data})
+
+
+class GetListProductCompareView(generics.ListAPIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        type = request.data.get('type')
+        brand = request.data.get("brand")
+        type_acc = request.data.get("typeAccessory")
+        q= Q()
+        if type :
+            q &= Q(type = type)
+        if brand :
+            q &= Q(brand = brand)
+        if type_acc :
+            q &= Q(type_accessory = type_acc)
+        print(q)
+        products = Product.objects.filter(q)
+        data = ProductSerializer(products, many=True)
+        return Response({"status": 200,"data":data.data })
