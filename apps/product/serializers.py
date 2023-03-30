@@ -43,3 +43,7 @@ class GetProductDetailsSerializer(serializers.ModelSerializer):
 class GetRoleReviewProductSerializers(serializers.Serializer):
     userId = serializers.IntegerField(required=True)
     productId = serializers.IntegerField(required=True)
+
+class CompareProductSerializers(serializers.Serializer):
+    productId1 = serializers.IntegerField(required=True)
+    productId2 = serializers.IntegerField(required=True)
