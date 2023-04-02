@@ -85,3 +85,37 @@ class LoginView(APIView):
                              "messenger": "Đăng nhập thành công",
                              "data": {"fullName": user.fullName,
                                       "id": user.id}})
+
+# admin
+
+
+class LoginAdmin(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        dataGet = GetUserSerializer(data=request.data)
+        if not dataGet.is_valid():
+            return Response({"status": 400,
+                            "data": f"Lỗi dữ liệu"}, status=status.HTTP_400_BAD_REQUEST)
+        username = (dataGet.data)["username"]
+        password = ((dataGet.data)["password"])
+        checkUserName = User.objects.filter(username=username)
+        if (not checkUserName):
+            return JsonResponse({"status": 400,
+                                 "messenger": "Tài khoản chưa chính xác"})
+        passWordDb = (User.objects.get(username=username)).password
+        checkPassWord = check_password(password, passWordDb)
+        if not checkPassWord:
+            return JsonResponse({"status": 400,
+                                 "messenger": "Mật khẩu chưa chính xác"})
+        user = User.objects.get(username=username)
+        if not user.is_superuser:
+            return JsonResponse({"status": 400,
+                                 "messenger": "Bạn không có quyền vào trang này",
+                                 "data": {
+                                 }})
+        name = user.first_name + " " + user.last_name
+        return JsonResponse({"status": 200,
+                             "messenger": "Đăng nhập thành công",
+                             "data": {"fullName": name,
+                                      }})

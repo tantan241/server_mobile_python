@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
-from .serializers import GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers
+from .serializers import GetBrandAdminSerializers, GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers
 from .models import Brand, Product
 from apps.comment.models import Comment
 from apps.user.models import CustomUser
@@ -12,6 +12,8 @@ from django.db.models import Q
 from django.db.models import Avg
 from django.db.models import Sum
 from math import *
+import json
+
 # Create your views here.
 
 
@@ -202,3 +204,94 @@ class CompareProductView(APIView):
             return Response({"status": 200, "product1": data_product_1.data, "product2": data_product_2.data})
         except:
             return Response({"status": 400, "messenger": "Không tồn tại sản phẩm"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# admin
+class GetBrandAdminView(APIView):
+    def post(self, request):
+        fields = ["name", "status"]
+        columns = [
+            {"field": "stt", "headerName": "STT",
+                "sortable": False,  "flex": 0.2, "filterable": False},
+            {"field": "name", "headerName": "Tên Thương Hiệu",
+                "filterable": False, "flex": 1},
+            {"field": "status", "headerName": "Trạng Thái",
+                "filterable": False, "flex": 1},
+        ]
+        dataSearch = [
+            {
+                "name": "--- Chọn giá trị ---",
+                "value": "default",
+                "type": "",
+            },
+            {
+                "name": "Tên thương hiệu",
+                "value": "name",
+                "type": "text",
+            },
+            {
+                "name": "Trạng thái",
+                "value": "status",
+                "type": "select",
+                "select": [
+                    {
+                        "name": "--- Chọn giá trị ---",
+                        "value": "default",
+                    },
+                    {
+                        "name": "Hoạt động",
+                        "value": "1",
+                    },
+                    {
+                        "name": "Ngừng Hoạt động",
+                        "value": "0",
+                    },
+                ],
+            }
+        ]
+
+        data = GetBrandAdminSerializers(data=request.data)
+        if not data.is_valid():
+            return Response({"status": 400, "messenger": "Lỗi dữ liệu đầu vào"}, status=status.HTTP_400_BAD_REQUEST)
+        limit = data.data["limit"]
+        page = data.data["page"]
+        search = data.data["search"]
+        sort = data.data.get("sort")
+
+        q = Q()
+        q &= Q(id__gte=0)
+
+        if search["field"] and search["field"] != "default":
+            if search["type"] == "text":
+                query = f"{search['field']}__icontains"
+                q &= Q(**{query: search["value"]})
+            if search["type"] == "select" and search["value"] != "default":
+                query = f"{search['field']}"
+                q &= Q(**{query: search["value"]})
+        start = page * limit
+        end = start + limit
+
+        if sort and sort["field"] in fields:
+            field_order_by = sort["field"]
+            if sort["sort"] == "desc":  # giảm dần
+                field_order_by = "-" + str(sort["field"])
+            brands = Brand.objects.filter(
+                q).order_by(field_order_by)[start:end]
+        else:
+            brands = Brand.objects.filter(q)[start:end]
+        count = Brand.objects.filter(q).count()
+        pageInfo = {"limit": limit, "page": page, "count": count}
+        data = GetBrandSerializer(brands, many=True)
+        index = page * limit + 1
+        for item in data.data:
+            item["stt"] = index
+            index += 1
+        return Response({"status": 200, "columns": columns, "rows": data.data, "pageInfo": pageInfo, "dataSearch": dataSearch})
+
+    def delete(self, request):
+        ids_json = request.GET.get('ids')
+        ids = json.loads(ids_json)
+        if ids and len(ids) > 0:
+            Brand.objects.filter(id__in=tuple(ids)).delete()
+            return Response({"status": 200, "messenger": "Xóa thành công"})
+        return Response({"status": 400, "messenger": "Không tồn tại sản phẩm"})
