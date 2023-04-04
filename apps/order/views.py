@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from .serializers import CreateOrderSerializers, GetOrderSerializer
+from apps.product.serializers import ProductSerializer
 from .models import Order, OrderMethod, OrderDetail
 from apps.user.models import CustomUser
 from apps.product.models import Product
@@ -67,3 +68,36 @@ class GetListOrder(APIView):
             order["count"] = count
             data_response.append(order)
         return Response({"status": 200, "data": data_response})
+
+class GetOrderDetail(APIView):
+    def post(self, request):
+        order_id = request.data['orderId']
+       
+        try:
+            order = Order.objects.get(id=order_id)
+            orderRes = GetOrderSerializer(order)
+            orderDetail = OrderDetail.objects.filter(order=order).values()
+            listOrderDetail = list()
+            for item in orderDetail :
+                product_query = Product.objects.get(id=item["product_id"])
+                product = ProductSerializer(product_query)
+                print(product.data)
+                item["image"] = product.data["image"]
+                item["name"] = product.data["name"]
+                product_specifications = product.data["specifications"]
+                ram =""
+                rom =""
+                for it in product_specifications:
+                    if it["name"] =="ram":
+                        ram= it["value"]
+                    if it["name"] =="rom":
+                        rom = it["value"]
+                specifications = ram +"-"+ rom
+                item["specifications"] = specifications
+                listOrderDetail.append(item)
+            res =orderRes.data
+            
+            res["orderDetail"] =listOrderDetail
+            return Response({"status": 200, "data": res})
+        except:
+            return  Response({"status":400,"messenger": "Lỗi"},status=status.HTTP_400_BAD_REQUEST)
