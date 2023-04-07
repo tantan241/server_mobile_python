@@ -94,6 +94,7 @@ class GetOrderDetail(APIView):
                         rom = it["value"]
                 specifications = ram +"-"+ rom
                 item["specifications"] = specifications
+                item["discount"] =product.data["discount"]
                 listOrderDetail.append(item)
             res =orderRes.data
             
