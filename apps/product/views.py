@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
-from .serializers import GetBrandAdminSerializers, GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers, AddBrandSerializers
+from .serializers import GetBrandAdminSerializers, GetListProductAdminSerializers, GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers, AddBrandSerializers, GetListProductAdminSerializers
 from .models import Brand, Product
 from apps.comment.models import Comment
 from apps.user.models import CustomUser
@@ -249,7 +249,11 @@ class GetBrandAdminView(APIView):
                 ],
             }
         ]
+        dataFilter = [
+            {"name": "Tên thương hiệu",
+             "value": "name"}
 
+        ]
         data = GetBrandAdminSerializers(data=request.data)
         if not data.is_valid():
             return Response({"status": 400, "messenger": "Lỗi dữ liệu đầu vào"}, status=status.HTTP_400_BAD_REQUEST)
@@ -275,18 +279,18 @@ class GetBrandAdminView(APIView):
             field_order_by = sort["field"]
             if sort["sort"] == "desc":  # giảm dần
                 field_order_by = "-" + str(sort["field"])
-            brands = Brand.objects.filter(
+            data_orm = Brand.objects.filter(
                 q).order_by(field_order_by)[start:end]
         else:
-            brands = Brand.objects.filter(q)[start:end]
+            data_orm = Brand.objects.filter(q)[start:end]
         count = Brand.objects.filter(q).count()
         pageInfo = {"limit": limit, "page": page, "count": count}
-        data = GetBrandSerializer(brands, many=True)
+        data = GetBrandSerializer(data_orm, many=True)
         index = page * limit + 1
         for item in data.data:
             item["stt"] = index
             index += 1
-        return Response({"status": 200, "columns": columns, "rows": data.data, "pageInfo": pageInfo, "dataSearch": dataSearch})
+        return Response({"status": 200, "columns": columns, "rows": data.data, "pageInfo": pageInfo, "dataSearch": dataSearch, "dataFilter": dataFilter})
 
     def delete(self, request):
         ids_json = request.GET.get('ids')
@@ -321,3 +325,139 @@ class AddBrandView(APIView):
             return Response({"status": 200, "messenger": "Cập nhâp thành công"})
         Brand.objects.create(name=name, status=status)
         return Response({"status": 200, "messenger": "Thêm mới thành công"})
+
+
+class GetListProductAdminView(APIView):
+    def post(self, request):
+        fields = ["name", "price", "discount", "image",
+                  "specifications", "type", "brand", "number", "status"]
+        columns = [
+            {"field": "stt", "headerName": "STT",
+                "sortable": False,  "flex": 0.2, "filterable": False},
+            {"field": "name", "headerName": "Tên Sản Phẩm",
+                "filterable": False, "flex": 1.5},
+            {"field": "price", "headerName": "Giá",
+             "filterable": False, "flex": 1},
+            {"field": "discount", "headerName": "Giảm Giá",
+             "filterable": False, "flex": 0.5},
+            {"field": "number", "headerName": "Số Lượng",
+             "filterable": False, "flex": 0.5},
+            {"field": "type", "headerName": "Loại sản phẩm",
+             "filterable": False, "flex": 0.7},
+            {"field": "brand", "headerName": "Thương Hiệu",
+             "filterable": False, "flex": 1},
+            {"field": "status", "headerName": "Trạng Thái",
+                "filterable": False, "flex": 1},
+        ]
+        dataSearch = [
+            {
+                "name": "--- Chọn giá trị ---",
+                "value": "default",
+                "type": "",
+            },
+            {
+                "name": "Tên thương hiệu",
+                "value": "name",
+                "type": "text",
+            },
+            {
+                "name": "Giá",
+                "value": "price",
+                "type": "text",
+            },
+            {
+                "name": "Giảm Giá",
+                "value": "discount",
+                "type": "text",
+            },
+            {
+                "name": "Thông Số",
+                "value": "specifications",
+                "type": "text",
+            },
+            {
+                "name": "Số Lượng",
+                "value": "number",
+                "type": "text",
+            },
+            {
+                "name": "Thương Hiệu",
+                "value": "number",
+                "type": "select",
+                "select": [
+                    # get từ brand
+                ],
+            },
+            {
+                "name": "Trạng thái",
+                "value": "status",
+                "type": "select",
+                "select": [
+                    {
+                        "name": "--- Chọn giá trị ---",
+                        "value": "default",
+                    },
+                    {
+                        "name": "Hoạt động",
+                        "value": "1",
+                    },
+                    {
+                        "name": "Ngừng Hoạt động",
+                        "value": "0",
+                    },
+                ],
+            }
+        ]
+        dataFilter = [
+            {"name": "Tên sản phẩm",
+             "value": "name"},
+            {"name": "Giá sản phẩm",
+             "value": "price"}, {"name": "Giảm giá",
+                                 "value": "discount"},
+            {"name": "Số lượng còn",
+             "value": "number"},
+
+        ]
+        data = GetListProductAdminSerializers(data=request.data)
+        if not data.is_valid():
+            return Response({"status": 400, "messenger": "Lỗi dữ liệu đầu vào"}, status=status.HTTP_400_BAD_REQUEST)
+        limit = data.data["limit"]
+        page = data.data["page"]
+        search = data.data["search"]
+        sort = data.data.get("sort")
+
+        q = Q()
+        q &= Q(id__gte=0)
+
+        if search["field"] and search["field"] != "default":
+            if search["type"] == "text":
+                query = f"{search['field']}__icontains"
+                q &= Q(**{query: search["value"]})
+            if search["type"] == "select" and search["value"] != "default":
+                query = f"{search['field']}"
+                q &= Q(**{query: search["value"]})
+        start = page * limit
+        end = start + limit
+
+        if sort and sort["field"] in fields:
+            field_order_by = sort["field"]
+            if sort["sort"] == "desc":  # giảm dần
+                field_order_by = "-" + str(sort["field"])
+            data_orm = Product.objects.filter(
+                q).order_by(field_order_by)[start:end]
+        else:
+            data_orm = Product.objects.filter(q)[start:end]
+        count = Product.objects.filter(q).count()
+        pageInfo = {"limit": limit, "page": page, "count": count}
+        data = ProductSerializer(data_orm, many=True)
+        index = page * limit + 1
+        for item in data.data:
+            item["stt"] = index
+            index += 1
+        return Response({"status": 200, "columns": columns, "rows": data.data, "pageInfo": pageInfo, "dataSearch": dataSearch, "dataFilter": dataFilter})
+
+
+class GetAllBrandForProductView(APIView):
+    def get(self, request):
+        brand = Brand.objects.all().values()
+        return Response({"status": 200, "data": brand})

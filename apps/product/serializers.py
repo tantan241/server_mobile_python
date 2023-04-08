@@ -66,6 +66,13 @@ class GetBrandAdminSerializers(serializers.Serializer):
     sort = serializers.DictField(required=False)
 
 
+class GetListProductAdminSerializers(serializers.Serializer):
+    limit = serializers.IntegerField(required=True)
+    page = serializers.IntegerField(required=True)
+    search = serializers.DictField(required=False)
+    sort = serializers.DictField(required=False)
+
+
 class AddBrandSerializers(serializers.Serializer):
     name = serializers.CharField(required=True)
     status = serializers.IntegerField(required=True)
