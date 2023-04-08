@@ -81,7 +81,6 @@ class GetOrderDetail(APIView):
             for item in orderDetail :
                 product_query = Product.objects.get(id=item["product_id"])
                 product = ProductSerializer(product_query)
-                print(product.data)
                 item["image"] = product.data["image"]
                 item["name"] = product.data["name"]
                 product_specifications = product.data["specifications"]

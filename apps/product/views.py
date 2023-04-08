@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
-from .serializers import GetBrandAdminSerializers, GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers
+from .serializers import GetBrandAdminSerializers, GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers, AddBrandSerializers
 from .models import Brand, Product
 from apps.comment.models import Comment
 from apps.user.models import CustomUser
@@ -295,3 +295,29 @@ class GetBrandAdminView(APIView):
             Brand.objects.filter(id__in=tuple(ids)).delete()
             return Response({"status": 200, "messenger": "Xóa thành công"})
         return Response({"status": 400, "messenger": "Không tồn tại sản phẩm"})
+
+
+class GetOneBrandView(APIView):
+    def get(self, request):
+        id = request.GET.get('id')
+        print(request.GET)
+        if not id:
+            return Response({"status": 400, "messenger": "Lỗi không tìm thấy id"}, status=status.HTTP_400_BAD_REQUEST)
+        brand = Brand.objects.get(id=id)
+        brand = GetBrandSerializer(brand)
+        return Response({"status": 200, "data": brand.data})
+
+
+class AddBrandView(APIView):
+    def post(self, request):
+        data = AddBrandSerializers(data=request.data)
+        if not data.is_valid():
+            return Response({"status": 400, "messenger": "Lỗi dũ liệu đẩu vào"}, status=status.HTTP_400_BAD_REQUEST)
+        name = data.data["name"].title()
+        id = data.data.get("id")
+        status = data.data["status"]
+        if id:
+            Brand.objects.filter(id=id).update(name=name, status=status)
+            return Response({"status": 200, "messenger": "Cập nhâp thành công"})
+        Brand.objects.create(name=name, status=status)
+        return Response({"status": 200, "messenger": "Thêm mới thành công"})
