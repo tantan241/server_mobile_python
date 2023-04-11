@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import Response
 from rest_framework import status, generics, permissions
-from .serializers import GetBrandAdminSerializers, GetListProductAdminSerializers, GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers, AddBrandSerializers, GetListProductAdminSerializers
+from .serializers import GetBrandAdminSerializers, AddProductAdminSerializer, GetListProductAdminSerializers, GetBrandSerializer, GetProductSerializer, ProductSerializer, GetRoleReviewProductSerializers, CompareProductSerializers, AddBrandSerializers, GetListProductAdminSerializers
 from .models import Brand, Product
 from apps.comment.models import Comment
 from apps.user.models import CustomUser
@@ -349,6 +349,15 @@ class GetListProductAdminView(APIView):
             {"field": "status", "headerName": "Trạng Thái",
                 "filterable": False, "flex": 1},
         ]
+        brands = Brand.objects.all().values()
+        brandSearch = list()
+        brandSearch.append({
+            "name": "--- Chọn giá trị ---",
+            "value": "default",
+        })
+        for item in brands:
+            brandSearch.append({"name": item["name"], "value": item["id"]})
+
         dataSearch = [
             {
                 "name": "--- Chọn giá trị ---",
@@ -356,7 +365,7 @@ class GetListProductAdminView(APIView):
                 "type": "",
             },
             {
-                "name": "Tên thương hiệu",
+                "name": "Tên Sản Phẩm",
                 "value": "name",
                 "type": "text",
             },
@@ -382,11 +391,9 @@ class GetListProductAdminView(APIView):
             },
             {
                 "name": "Thương Hiệu",
-                "value": "number",
+                "value": "brand",
                 "type": "select",
-                "select": [
-                    # get từ brand
-                ],
+                "select": brandSearch
             },
             {
                 "name": "Trạng thái",
@@ -461,3 +468,42 @@ class GetAllBrandForProductView(APIView):
     def get(self, request):
         brand = Brand.objects.all().values()
         return Response({"status": 200, "data": brand})
+
+
+class AddProductAdminView(APIView):
+    def post(self, request):
+        data = AddProductAdminSerializer(data=request.data)
+        if not data.is_valid():
+            return Response({"status": 400, "messenger": "Lỗi dữ liệu đầu vào"}, status=status.HTTP_400_BAD_REQUEST)
+        id = data.data.get("id")
+        name = data.data["name"]
+        price = data.data["price"]
+        discount = data.data["discount"]
+        slug = data.data["slug"]
+        image = data.data["image"]
+        images = data.data["images"]
+        number = data.data["number"]
+        status = data.data["status"]
+        type = data.data["type"]
+        typeAccessory = data.data["typeAccessory"]
+        brand = data.data["brand"]
+        specifications = data.data["specifications"]
+        brandO = Brand.objects.get(id=brand)
+        if id:
+            Product.objects.filter(id=id).update(name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
+                                                 price=price, discount=discount, slug=slug, image=image, images=images, number=number)
+            return Response({"status": 200, "messenger": "Cập nhập thành công"})
+        Product.objects.create(name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
+                               price=price, discount=discount, slug=slug, image=image, images=images, number=number)
+        return Response({"status": 200, "messenger": "Thêm nhập thành công"})
+
+
+class GetOneProductView(APIView):
+    def get(self, request):
+        id = request.GET.get('id')
+        print(request.GET)
+        if not id:
+            return Response({"status": 400, "messenger": "Lỗi không tìm thấy id"}, status=status.HTTP_400_BAD_REQUEST)
+        product = Product.objects.get(id=id)
+        product = ProductSerializer(product)
+        return Response({"status": 200, "data": product.data})

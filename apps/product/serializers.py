@@ -77,3 +77,18 @@ class AddBrandSerializers(serializers.Serializer):
     name = serializers.CharField(required=True)
     status = serializers.IntegerField(required=True)
     id = serializers.IntegerField(required=False)
+
+
+class AddProductAdminSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True)
+    price = serializers.IntegerField(required=True)
+    discount = serializers.IntegerField(required=True)
+    image = serializers.CharField(required=True)
+    slug = serializers.CharField(required=True)
+    type = serializers.IntegerField(required=True)
+    brand = serializers.IntegerField(required=True)
+    status = serializers.IntegerField(required=True)
+    images = serializers.CharField(required=True)
+    specifications = serializers.JSONField(required=True)
+    number = serializers.IntegerField(required=True)
+    typeAccessory = serializers.IntegerField(required=True)

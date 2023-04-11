@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import GetBrand, GetAllBrandForProductView, GetListProductAdminView, GetMobile, GetRoleReviewProductView, GetTopBuyProductView, GetListProductCompareView, CompareProductView, GetBrandAdminView, GetOneBrandView, AddBrandView
+from .views import GetBrand, GetOneProductView, AddProductAdminView, GetAllBrandForProductView, GetListProductAdminView, GetMobile, GetRoleReviewProductView, GetTopBuyProductView, GetListProductCompareView, CompareProductView, GetBrandAdminView, GetOneBrandView, AddBrandView
 urlpatterns = [
     path("get-brand", GetBrand.as_view(), name="get-brand"),
     path("get-product", GetMobile.as_view(), name="get-product"),
@@ -19,5 +19,9 @@ urlpatterns = [
          name="admin-get-list-brand"),
     path("admin/get-all-brand-product", GetAllBrandForProductView.as_view(),
          name="admin-get-all-brand-product"),
+    path("admin/add-product", AddProductAdminView.as_view(),
+         name="admin-add-product"),
+    path("admin/get-one-product", GetOneProductView.as_view(),
+         name="admin-get-one-product"),
 
 ]
