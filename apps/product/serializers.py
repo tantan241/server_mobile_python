@@ -81,6 +81,8 @@ class AddBrandSerializers(serializers.Serializer):
 
 class AddProductAdminSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
+    description = serializers.CharField(required=False,allow_blank=True)
+    id = serializers.IntegerField(required=False)
     price = serializers.IntegerField(required=True)
     discount = serializers.IntegerField(required=True)
     image = serializers.CharField(required=True)

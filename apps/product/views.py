@@ -462,7 +462,13 @@ class GetListProductAdminView(APIView):
             item["stt"] = index
             index += 1
         return Response({"status": 200, "columns": columns, "rows": data.data, "pageInfo": pageInfo, "dataSearch": dataSearch, "dataFilter": dataFilter})
-
+    def delete(self, request):
+            ids_json = request.GET.get('ids')
+            ids = json.loads(ids_json)
+            if ids and len(ids) > 0:
+                Product.objects.filter(id__in=tuple(ids)).delete()
+                return Response({"status": 200, "messenger": "Xóa thành công"})
+            return Response({"status": 400, "messenger": "Không tồn tại sản phẩm"})
 
 class GetAllBrandForProductView(APIView):
     def get(self, request):
@@ -476,6 +482,7 @@ class AddProductAdminView(APIView):
         if not data.is_valid():
             return Response({"status": 400, "messenger": "Lỗi dữ liệu đầu vào"}, status=status.HTTP_400_BAD_REQUEST)
         id = data.data.get("id")
+        description = data.data.get("description") if  data.data.get("description") else ""
         name = data.data["name"]
         price = data.data["price"]
         discount = data.data["discount"]
@@ -489,13 +496,14 @@ class AddProductAdminView(APIView):
         brand = data.data["brand"]
         specifications = data.data["specifications"]
         brandO = Brand.objects.get(id=brand)
+        print(data.data)
         if id:
             Product.objects.filter(id=id).update(name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
-                                                 price=price, discount=discount, slug=slug, image=image, images=images, number=number)
+                                                 price=price, discount=discount, slug=slug, image=image, images=images, number=number,description=description)
             return Response({"status": 200, "messenger": "Cập nhập thành công"})
         Product.objects.create(name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
-                               price=price, discount=discount, slug=slug, image=image, images=images, number=number)
-        return Response({"status": 200, "messenger": "Thêm nhập thành công"})
+                               price=price, discount=discount, slug=slug, image=image, images=images, number=number,description=description)
+        return Response({"status": 200, "messenger": "Thêm mới thành công"})
 
 
 class GetOneProductView(APIView):

@@ -14,6 +14,7 @@ class Brand(models.Model):
 class Product(models.Model):
     # product = models.ForeignKey(Product,on_delete=models.CASCADE)
     name = models.CharField(max_length=155, default="")
+    description = models.TextField( default="",)
     type = models.IntegerField(default=0)
     type_accessory = models.IntegerField(default=0)
     status = models.IntegerField(default=1)
