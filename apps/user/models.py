@@ -34,7 +34,9 @@ from django.contrib.auth.models import AbstractUser,Group,Permission,User
 #         fullName =models.CharField(max_length=50,default="")
 class CustomUser(User):
     fullName = models.CharField(max_length=100)
-    # email = models.EmailField(max_length=100, unique=True)
+    # email = models.EmailField(max_length=100, blank=True)
+    phone = models.IntegerField(blank=True,null=True)
+    address = models.CharField(max_length=255, blank=True,null=True)
     def __str__(self):
         return self.fullName
             

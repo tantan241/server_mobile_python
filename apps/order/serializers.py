@@ -28,3 +28,10 @@ class GetOrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderDetail
         fields = "__all__"
+
+# admin
+class GetListOrderAdminSerializers(serializers.Serializer):
+    limit = serializers.IntegerField(required=True)
+    page = serializers.IntegerField(required=True)
+    search = serializers.DictField(required=False)
+    sort = serializers.DictField(required=False)
