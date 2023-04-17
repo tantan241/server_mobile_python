@@ -419,9 +419,9 @@ class GetListProductAdminView(APIView):
             {"name": "Tên sản phẩm",
              "value": "name"},
             {"name": "Giá sản phẩm",
-             "value": "price"}, 
-             {"name": "Giảm giá",
-              "value": "discount"},
+             "value": "price"},
+            {"name": "Giảm giá",
+             "value": "discount"},
             {"name": "Số lượng còn",
              "value": "number"},
 
@@ -502,10 +502,10 @@ class AddProductAdminView(APIView):
         brandO = Brand.objects.get(id=brand)
         print(data.data)
         if id:
-            Product.objects.filter(id=id).update(name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
+            Product.objects.filter(id=id).update(status=status, name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
                                                  price=price, discount=discount, slug=slug, image=image, images=images, number=number, description=description)
             return Response({"status": 200, "messenger": "Cập nhập thành công"})
-        Product.objects.create(name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
+        Product.objects.create(status=status, name=name, type=type, type_accessory=typeAccessory, brand=brandO, specifications=specifications,
                                price=price, discount=discount, slug=slug, image=image, images=images, number=number, description=description)
         return Response({"status": 200, "messenger": "Thêm mới thành công"})
 
