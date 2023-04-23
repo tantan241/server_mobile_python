@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
-from .serializers import SendCommentSerializer, GetCommentSerializer, GetListCommentAdminSerializers,UpdateCommentAdminSerializer
+from .serializers import SendCommentSerializer, GetCommentSerializer, GetListCommentAdminSerializers, UpdateCommentAdminSerializer
 from .models import Comment
 from apps.user.models import CustomUser
 from django.db.models import Q
@@ -243,6 +243,7 @@ class GetOneCommentView(APIView):
         comment = GetCommentSerializer(comment)
         return Response({"status": 200, "data": comment.data})
 
+
 class UpdateCommentView(APIView):
     def post(self, request):
         data = UpdateCommentAdminSerializer(data=request.data)
@@ -252,4 +253,35 @@ class UpdateCommentView(APIView):
         status = data.data["status"]
         Comment.objects.filter(id=id).update(status=status)
         return Response({"status": 200, "messenger": "Cập nhập thành công"})
-       
+
+
+class GetInfoCommentAdminView(APIView):
+    def get(self, request, *args, **kwargs):
+        product_id = self.kwargs['id']
+        try:
+            product = Product.objects.get(id=product_id)
+            id = product.id
+            image = product.image
+            name = product.name
+            commentQuery = Comment.objects.filter(product_id=product_id)
+            totalComment = commentQuery.count()
+            star_1 = commentQuery.filter(rating=1).count()
+            star_2 = commentQuery.filter(rating=2).count()
+            star_3 = commentQuery.filter(rating=3).count()
+            star_4 = commentQuery.filter(rating=4).count()
+            star_5 = commentQuery.filter(rating=5).count()
+            avg = (star_1 + star_2 + star_3 + star_4 + star_5)/totalComment
+            return Response({"status": 200, "data": {
+                "id": id,
+                "image": image,
+                "name": name,
+                "totalComment": totalComment,
+                "star_1": star_1,
+                "star_2": star_2,
+                "star_3": star_3,
+                "star_4": star_4,
+                "star_5": star_5,
+                "avg": avg,
+            }})
+        except:
+            return Response("Không tồn tại sản phẩm")

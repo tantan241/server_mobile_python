@@ -4,12 +4,14 @@ from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, permissions
-from .serializers import UserSerializer, GetUserSerializer
+from .serializers import UserSerializer, GetUserSerializer,GetCustomerAdminSerializers,GetCustomerSerializer
 from .models import CustomUser
 from django.contrib.auth.models import User, AnonymousUser
 from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password, check_password
 from apps.cart.models import Cart
+from django.db.models import Q
+
 # Create your views here.
 
 
@@ -119,3 +121,112 @@ class LoginAdmin(APIView):
                              "messenger": "Đăng nhập thành công",
                              "data": {"fullName": name,
                                       }})
+
+
+class GetCustomerAdminView(APIView):
+    def post(self, request):
+        fields = ["name", "status"]
+        columns = [
+            {"field": "stt", "headerName": "STT",
+                "sortable": False,  "flex": 0.2, "filterable": False},
+            {"field": "fullName", "headerName": "Họ và tên", "sortable": False,
+                "filterable": False, "flex": 1},
+            {"field": "address", "headerName": "Địa chỉ", "sortable": False,
+             "filterable": False, "flex": 1},
+            {"field": "phone", "headerName": "Số điện thoại", "sortable": False,
+             "filterable": False, "flex": 1},
+              {"field": "emailCustomer", "headerName": "Email", "sortable": False,
+             "filterable": False, "flex": 1},
+            # {"field": "status", "headerName": "Trạng Thái",
+            #     "filterable": False, "flex": 1, "sortable": False},
+        ]
+        dataSearch = [
+            {
+                "name": "--- Chọn giá trị ---",
+                "value": "default",
+                "type": "",
+            },
+            {
+                "name": "Họ và tên",
+                "value": "fullName",
+                "type": "text",
+            },
+            {
+                "name": "Địa chỉ",
+                "value": "address",
+                "type": "text",
+            },
+            {
+                "name": "Số điện thoại",
+                "value": "phone",
+                "type": "text",
+            },
+             {
+                "name": "Email",
+                "value": "emailCustomer",
+                "type": "text",
+            },
+            # {
+            #     "name": "Trạng thái",
+            #     "value": "status",
+            #     "type": "select",
+            #     "select": [
+            #         {
+            #             "name": "--- Chọn giá trị ---",
+            #             "value": "default",
+            #         },
+            #         {
+            #             "name": "Hoạt động",
+            #             "value": "1",
+            #         },
+            #         {
+            #             "name": "Ngừng Hoạt động",
+            #             "value": "0",
+            #         },
+            #     ],
+            # }
+        ]
+        dataFilter = [
+            {"name": "Họ và tên",
+             "value": "fullName"},
+            #  {"name": "Họ và tên",
+            #  "value": "fullName"},
+
+        ]
+        data = GetCustomerAdminSerializers(data=request.data)
+        if not data.is_valid():
+            return Response({"status": 400, "messenger": "Lỗi dữ liệu đầu vào"}, status=status.HTTP_400_BAD_REQUEST)
+        limit = data.data["limit"]
+        page = data.data["page"]
+        search = data.data["search"]
+        sort = data.data.get("sort")
+
+        q = Q()
+        q &= Q(id__gte=0)
+
+        if search["field"] and search["field"] != "default":
+            if search["type"] == "text":
+                query = f"{search['field']}__icontains"
+                q &= Q(**{query: search["value"]})
+            if search["type"] == "select" and search["value"] != "default":
+                query = f"{search['field']}"
+                q &= Q(**{query: search["value"]})
+        start = page * limit
+        end = start + limit
+
+        if sort and sort["field"] in fields:
+            field_order_by = sort["field"]
+            if sort["sort"] == "desc":  # giảm dần
+                field_order_by = "-" + str(sort["field"])
+            data_orm = CustomUser.objects.filter(
+                q).order_by(field_order_by)[start:end]
+        else:
+            data_orm = CustomUser.objects.filter(q)[start:end]
+        count = CustomUser.objects.filter(q).count()
+        pageInfo = {"limit": limit, "page": page, "count": count}
+        data = GetCustomerSerializer(data_orm, many=True)
+        index = page * limit + 1
+        for item in data.data:
+            item["stt"] = index
+            index += 1
+        return Response({"status": 200, "columns": columns, "rows": data.data, "pageInfo": pageInfo, "dataSearch": dataSearch, "dataFilter": dataFilter})

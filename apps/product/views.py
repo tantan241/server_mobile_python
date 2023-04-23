@@ -7,7 +7,7 @@ from .serializers import GetBrandAdminSerializers, AddProductAdminSerializer, Ge
 from .models import Brand, Product
 from apps.comment.models import Comment
 from apps.user.models import CustomUser
-from apps.order.models import OrderDetail
+from apps.order.models import OrderDetail,Order
 from django.db.models import Q
 from django.db.models import Avg
 from django.db.models import Sum
@@ -519,3 +519,13 @@ class GetOneProductView(APIView):
         product = Product.objects.get(id=id)
         product = ProductSerializer(product)
         return Response({"status": 200, "data": product.data})
+    
+class GetDashboardView(APIView):
+    def post(self, request):
+        fromDate = request.data["fromDate"]
+        toDate = request.data["toDate"]
+        orders = Order.objects.prefetch_related('orderdetail_set').all()
+        # print(orders)
+        for order in orders:
+             print(order.orderdetail_set)
+        return Response(1)
