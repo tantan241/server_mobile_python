@@ -21,3 +21,10 @@ class GetCustomerAdminSerializers(serializers.Serializer):
     page = serializers.IntegerField(required=True)
     search = serializers.DictField(required=False)
     sort = serializers.DictField(required=False)
+
+class AddCustomerSerializers(serializers.Serializer):
+    fullName = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    phone = serializers.IntegerField(required=True)
+    address = serializers.CharField(required=True)
+    id = serializers.CharField(required=False)

@@ -238,3 +238,21 @@ class GetListOrderAdminView(APIView):
             Order.objects.filter(id__in=tuple(ids)).delete()
             return Response({"status": 200, "messenger": "Xóa thành công"})
         return Response({"status": 400, "messenger": "Không tồn tại sản phẩm"})
+class GetOneOrderView(APIView):
+    def get(self, request):
+        id = request.GET.get('id')
+        if not id:
+            return Response({"status": 400, "messenger": "Lỗi không tìm thấy id"}, status=status.HTTP_400_BAD_REQUEST)
+        order = Order.objects.get(id=id)
+        orderDetail = OrderDetail.objects.filter(order=order).values()
+        order = GetOrderSerializer(order)
+        data = order.data
+        listOrderDetail = list()
+        for item in orderDetail:
+            product_query = Product.objects.get(id=item["product_id"])
+            product = ProductSerializer(product_query)
+            item["name"] = product.data["name"]
+            item["discount"] = product.data["discount"]
+            listOrderDetail.append(item)
+        data["orderDetail"] = listOrderDetail
+        return Response({"status": 200, "data": data})

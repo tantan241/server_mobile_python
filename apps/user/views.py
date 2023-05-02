@@ -4,14 +4,16 @@ from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, permissions
-from .serializers import UserSerializer, GetUserSerializer,GetCustomerAdminSerializers,GetCustomerSerializer
+from .serializers import UserSerializer, GetUserSerializer,GetCustomerAdminSerializers,GetCustomerSerializer,AddCustomerSerializers
 from .models import CustomUser
 from django.contrib.auth.models import User, AnonymousUser
 from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password, check_password
 from apps.cart.models import Cart
 from django.db.models import Q
-
+from apps.order.models import Order
+from django.db.models import Sum
+import json
 # Create your views here.
 
 
@@ -230,3 +232,48 @@ class GetCustomerAdminView(APIView):
             item["stt"] = index
             index += 1
         return Response({"status": 200, "columns": columns, "rows": data.data, "pageInfo": pageInfo, "dataSearch": dataSearch, "dataFilter": dataFilter})
+    def delete(self, request):
+        ids_json = request.GET.get('ids')
+        ids = json.loads(ids_json)
+        if ids and len(ids) > 0:
+            User.objects.filter(id__in=tuple(ids)).delete()
+            return Response({"status": 200, "messenger": "Xóa thành công"})
+        return Response({"status": 400, "messenger": "Không tồn tại sản phẩm"})
+
+class GetOneCustomerView(APIView):
+    def get(self, request):
+        id = request.GET.get('id')
+        if not id:
+            return Response({"status": 400, "messenger": "Lỗi không tìm thấy id"}, status=status.HTTP_400_BAD_REQUEST)
+        customer = CustomUser.objects.get(id=id)
+        customer = GetCustomerSerializer(customer)
+        data= dict()
+        data["fullName"]= customer.data["fullName"]
+        data["username"]= customer.data["username"]
+        data["id"]= customer.data["id"]
+        data["phone"]= customer.data["phone"]
+        data["email"]= customer.data["emailCustomer"]
+        data["address"]= customer.data["address"]
+        order = Order.objects.filter(user_id=id)
+        number_order = order.count()
+        data["number_order"]= number_order
+        total_price = order.aggregate(Sum('totalMoney'))['totalMoney__sum']
+        data["total_price"]= total_price
+        return Response({"status": 200, "data": data})
+   
+class AddCustomerView(APIView):
+    def post(self, request):
+        data = AddCustomerSerializers(data=request.data)
+        if not data.is_valid():
+            return Response({"status": 400, "messenger": "Lỗi dũ liệu đẩu vào"}, status=status.HTTP_400_BAD_REQUEST)
+        fullName = data.data["fullName"]
+        email = data.data["email"]
+        address = data.data["address"]
+        phone = data.data["phone"]
+        id = data.data.get("id")
+        # status = data.data["status"]
+        if id:
+            CustomUser.objects.filter(id=id).update(fullName=fullName, emailCustomer=email,address=address,phone=phone)
+            return Response({"status": 200, "messenger": "Cập nhâp thành công"})
+        CustomUser.objects.create(fullName=fullName, emailCustomer=email,address=address,phone=phone)
+        return Response({"status": 200, "messenger": "Thêm mới thành công"})

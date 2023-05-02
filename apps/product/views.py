@@ -7,13 +7,15 @@ from .serializers import GetBrandAdminSerializers, AddProductAdminSerializer, Ge
 from .models import Brand, Product
 from apps.comment.models import Comment
 from apps.user.models import CustomUser
-from apps.order.models import OrderDetail,Order
+from apps.order.models import OrderDetail, Order
 from django.db.models import Q
 from django.db.models import Avg
 from django.db.models import Sum
 from math import *
 import json
-
+from datetime import datetime
+import pytz
+from apps.user.models import User
 # Create your views here.
 
 
@@ -181,7 +183,6 @@ class GetListProductCompareView(generics.ListAPIView):
             q &= Q(brand=brand)
         if type_acc:
             q &= Q(type_accessory=type_acc)
-        print(q)
         products = Product.objects.filter(q)
         data = ProductSerializer(products, many=True)
         return Response({"status": 200, "data": data.data})
@@ -519,13 +520,48 @@ class GetOneProductView(APIView):
         product = Product.objects.get(id=id)
         product = ProductSerializer(product)
         return Response({"status": 200, "data": product.data})
-    
+
+
 class GetDashboardView(APIView):
+    def convert_date(self, date):
+        dt = datetime.strptime(date, '%d/%m/%Y')
+        dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        tz = pytz.timezone('Asia/Ho_Chi_Minh')
+        iso_dt = dt.astimezone(tz).isoformat()
+        return iso_dt
+
     def post(self, request):
-        fromDate = request.data["fromDate"]
-        toDate = request.data["toDate"]
-        orders = Order.objects.prefetch_related('orderdetail_set').all()
-        # print(orders)
-        for order in orders:
-             print(order.orderdetail_set)
-        return Response(1)
+        fromDate = self.convert_date(request.data["fromDate"])
+        toDate = self.convert_date(request.data["toDate"])
+        orders = Order.objects.filter(
+            Q(createdAt__gte=fromDate) & Q(createdAt__lte=toDate))
+        # Số hóa đơn lập
+        order_count = orders.count()
+        # Số user mới
+        user_count = User.objects.filter(
+            Q(date_joined__gte=fromDate) & Q(date_joined__lte=toDate)).count()
+        # Sản phẩm bán chạy nhất
+        order_details = OrderDetail.objects.values('product_id').annotate(
+            sum=Sum('number')).order_by('-sum')[:1]
+        product_id = order_details[0]["product_id"]
+        product = Product.objects.get(id=product_id)
+        product_name = product.name
+        # Số sản phẩm hết hàng
+        product_number_0 = Product.objects.filter(number=0).count()
+        product_out_of_stock = Product.objects.filter(status =1,number=0).values()
+        # Tổng số sản phẩm đã bán
+        list_id_product = list()
+        for order in orders: 
+            list_id_product.append(order.id)
+        order_details = OrderDetail.objects.filter(order_id__in= list_id_product)
+        total_price = order_details.aggregate(Sum('price'))['price__sum']
+        total_product = order_details.aggregate(Sum('number'))['number__sum']
+        return Response({"status": 200, "data": {
+            "order_count": order_count,
+            "user_count": user_count,
+            "product_name": product_name,
+            "product_number_0": product_number_0,
+            "total_price": total_price,
+            "total_product": total_product,
+            "product_out_of_stock": product_out_of_stock,
+        }})
