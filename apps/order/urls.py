@@ -1,6 +1,6 @@
 
 from django.urls import path, include
-from .views import CreateOrderView, CountOrderView, GetListOrder, GetOrderDetail, GetListOrderAdminView, GetOneOrderView
+from .views import CreateOrderView,AddOrderAdmin, CountOrderView, GetListOrder, GetOrderDetail, GetListOrderAdminView, GetOneOrderView
 urlpatterns = [
 
     path('create-order', CreateOrderView.as_view(), name='create-order'),
@@ -11,4 +11,6 @@ urlpatterns = [
          name="admin-get-list-order"),
     path("admin/get-one-order", GetOneOrderView.as_view(),
          name="admin-get-one-order"),
+      path("admin/add-order", AddOrderAdmin.as_view(),
+         name="admin-add-order"),
 ]

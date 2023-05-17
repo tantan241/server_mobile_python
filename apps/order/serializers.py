@@ -35,3 +35,17 @@ class GetListOrderAdminSerializers(serializers.Serializer):
     page = serializers.IntegerField(required=True)
     search = serializers.DictField(required=False)
     sort = serializers.DictField(required=False)
+
+class AddOrderAdminSerializer(serializers.Serializer):
+    name= serializers.CharField(required=True)
+    email= serializers.EmailField(required=True)
+    phone= serializers.CharField(required=True)
+    address= serializers.CharField(required=True)
+    note= serializers.CharField(required=False)
+    createdAt= serializers.DateTimeField(required=True)
+    status =serializers.IntegerField(required=True)
+    id =serializers.IntegerField(required=False)
+    user =serializers.IntegerField(required=True)
+    order_method =serializers.IntegerField(required=True)
+    orderDetail = serializers.ListField(required=False)
+    totalMoney =serializers.DecimalField(required=True,max_digits=15, decimal_places=2)

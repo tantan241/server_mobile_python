@@ -2,13 +2,16 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
-from .serializers import CreateOrderSerializers, GetOrderSerializer,GetListOrderAdminSerializers
+from .serializers import CreateOrderSerializers, GetOrderSerializer, GetListOrderAdminSerializers, AddOrderAdminSerializer
 from apps.product.serializers import ProductSerializer
 from .models import Order, OrderMethod, OrderDetail
 from apps.user.models import CustomUser
 from apps.product.models import Product
 import json
 from django.db.models import Q
+from datetime import datetime
+from apps.user.models import User
+import pytz
 # Create your views here.
 
 
@@ -238,6 +241,8 @@ class GetListOrderAdminView(APIView):
             Order.objects.filter(id__in=tuple(ids)).delete()
             return Response({"status": 200, "messenger": "Xóa thành công"})
         return Response({"status": 400, "messenger": "Không tồn tại sản phẩm"})
+
+
 class GetOneOrderView(APIView):
     def get(self, request):
         id = request.GET.get('id')
@@ -256,3 +261,38 @@ class GetOneOrderView(APIView):
             listOrderDetail.append(item)
         data["orderDetail"] = listOrderDetail
         return Response({"status": 200, "data": data})
+
+
+class AddOrderAdmin(APIView):
+    def post(self, request):
+        data = AddOrderAdminSerializer(data=request.data)
+        if not data.is_valid():
+            return Response({"status": 400, "messenger": "Lỗi dữ liệu đầu vào"}, status=status.HTTP_400_BAD_REQUEST)
+        id = data.data.get("id")
+        name = data.data["name"]
+        phone = data.data["phone"]
+        email = data.data["email"]
+        address = data.data["address"]
+        totalMoney = data.data["totalMoney"]
+        createdAt = data.data["createdAt"]
+        status = data.data["status"]
+        order_method = data.data["order_method"]
+        user = data.data["user"]
+        orderDetail = data.data["orderDetail"]
+        note = data.data.get(
+            "note") if data.data.get("note") else ""
+        order_method = OrderMethod.objects.get(id = int(order_method))
+        user = CustomUser.objects.get(id = int(user))
+        if id:
+            Order.objects.filter(id=int(id)).update(order_method=order_method, user=user, name=name, phone=phone,
+                                               email=email, address=address, note=note, totalMoney=totalMoney, createdAt=createdAt, status=status)
+            print(Order.objects.filter(id=id))
+            for orderDetail_child in orderDetail:
+                OrderDetail.objects.filter(order_id = int(orderDetail_child["order_id"]),product_id =  int(orderDetail_child["product_id"])).update(number= int(orderDetail_child["number"]))
+            return Response({"status": 200,"messenger": "Cập nhập thành công"})
+
+        order_create =Order.objects.create(order_method=order_method, user=user, name=name, phone=phone, email=email,
+                             address=address, note=note, totalMoney=totalMoney, createdAt=createdAt, status=status)
+        for orderDetail_child in orderDetail:
+            OrderDetail.objects.create(order = order_create,product_id =  int(orderDetail_child["product_id"]),number= int(orderDetail_child["number"]),price = orderDetail_child["price"])
+        return Response({"status": 200,"messenger": "Thêm mới thành công"})
