@@ -288,7 +288,11 @@ class AddOrderAdmin(APIView):
                                                email=email, address=address, note=note, totalMoney=totalMoney, createdAt=createdAt, status=status)
             print(Order.objects.filter(id=id))
             for orderDetail_child in orderDetail:
-                OrderDetail.objects.filter(order_id = int(orderDetail_child["order_id"]),product_id =  int(orderDetail_child["product_id"])).update(number= int(orderDetail_child["number"]))
+                order_detail = OrderDetail.objects.filter(order_id = int(orderDetail_child["order_id"]),product_id =  int(orderDetail_child["product_id"]))
+                if len(order_detail)> 0:
+                    order_detail.update(number= int(orderDetail_child["number"]))
+                else:
+                    OrderDetail.objects.create(order_id = orderDetail_child["order_id"],product_id =  int(orderDetail_child["product_id"]),number= int(orderDetail_child["number"]),price = orderDetail_child["price"])
             return Response({"status": 200,"messenger": "Cập nhập thành công"})
 
         order_create =Order.objects.create(order_method=order_method, user=user, name=name, phone=phone, email=email,
